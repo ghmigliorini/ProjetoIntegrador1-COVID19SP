@@ -1,4 +1,4 @@
-#Para rodar esse arquivo, é necessário criar a base de dados com as tabelas utilizando os scripts disponíveis em Script/create_database.sql
+#Para rodar esse arquivo, Ã© necessÃ¡rio criar a base de dados com as tabelas utilizando os scripts disponÃ­veis em Script/create_database.sql
 
 #caso ainda nao tenha os pacotes instalados
 
@@ -32,15 +32,15 @@ library(evaluate)
 library(plotly)
 
 
-#Alterar variáveis de acordo com as configurações do computador
-diretorio_arquivos_csv <- "C:/Users/Gustavo/OneDrive/ECOLOGIA/Pós-graduação/Especialização/Módulo 1/Projeto Integrador"
+#Alterar variÃ¡veis de acordo com as configuraÃ§Ãµes do computador
+diretorio_arquivos_csv <- "C:/Users/..."
 host_banco <- "localhost"
 porta_banco <- 5432
 usuario_banco <- "postgres"
-senha_banco <- "12345"
-nome_database <- "PI_video"
+senha_banco <- "senha"
+nome_database <- "database"
 
-#realiza conexão com o banco de dados PostgreSQL
+#realiza conexÃ£o com o banco de dados PostgreSQL
 drv <- dbDriver("PostgreSQL")
 con <- dbConnect(drv, 
                  dbname = nome_database,
@@ -52,15 +52,15 @@ con <- dbConnect(drv,
 # remove a senha
 rm (senha_banco)
 
-#Inicia leitura e tratamento de dados para inclusão no banco de dados
+#Inicia leitura e tratamento de dados para inclusÃ£o no banco de dados
 
-#REGIÕES ADMINISTRATIVAS E MUNICÍPIOS
+#REGIÃ•ES ADMINISTRATIVAS E MUNICÃPIOS
 df_municipios <- read_csv2(
   paste0(diretorio_arquivos_csv, "20210510_dados_covid_municipios_sp.csv"),
   locale = locale(encoding = "UTF-8")
 )
 
-#Prepara e insere os dados da tabela de regiões administrativas
+#Prepara e insere os dados da tabela de regiÃµes administrativas
 df_tabela_regioes_administrativas <- 
   distinct(df_municipios, 
            codigo = cod_ra, 
@@ -68,7 +68,7 @@ df_tabela_regioes_administrativas <-
   filter(!is.na(nome))
 dbWriteTable(con, "regiao_administrativa", df_tabela_regioes_administrativas, row.names=FALSE, append=TRUE)
 
-#Prepara e insere os dados da tabela de municípios
+#Prepara e insere os dados da tabela de municÃ­pios
 df_tabela_municipios <- 
   distinct(df_municipios, 
            ibge = codigo_ibge, 
@@ -93,10 +93,10 @@ dbWriteTable(con, "comorbidade", df_tabela_comorbidades, row.names=FALSE, append
 
 #Prepara e insere os dados da tabela de pacientes
 df_micro_dados_casos$codigo_paciente <- seq(1, nrow(df_micro_dados_casos))
-#Ajusta dados de municípios informados de forma divergente
-df_micro_dados_casos$Municipio[df_micro_dados_casos$Municipio == "ARCO ÍRIS"] <- "ARCO-ÍRIS"
+#Ajusta dados de municÃ­pios informados de forma divergente
+df_micro_dados_casos$Municipio[df_micro_dados_casos$Municipio == "ARCO ÃRIS"] <- "ARCO-ÃRIS"
 df_micro_dados_casos$Municipio[df_micro_dados_casos$Municipio == "BIRITIBA-MIRIM"] <- "BIRITIBA MIRIM"
-df_micro_dados_casos$Municipio[df_micro_dados_casos$Municipio == "ITAÓCA"] <- "ITAOCA"
+df_micro_dados_casos$Municipio[df_micro_dados_casos$Municipio == "ITAÃ“CA"] <- "ITAOCA"
 df_merge_municipio <- left_join(df_micro_dados_casos, df_tabela_municipios, by = c("Municipio" = "nome"))
 df_tabela_pacientes <- select(df_merge_municipio, codigo=codigo_paciente, genero=Genero, idade=Idade, municipio=ibge)
 dbWriteTable(con, "paciente", df_tabela_pacientes, row.names=FALSE, append=TRUE)
@@ -242,14 +242,14 @@ if (nrow(df_micro_dados_casos_filter) > 0) {
   df_tabela_comorbidades_paciente <- rename(df_tabela_comorbidades_paciente, paciente=codigo_paciente)
   dbWriteTable(con, "comorbidade_paciente", df_tabela_comorbidades_paciente, row.names=FALSE, append=TRUE)
 }
-#Puérpera
-df_micro_dados_casos_filter <- filter(df_micro_dados_casos, Puérpera=="SIM")
+#PuÃ©rpera
+df_micro_dados_casos_filter <- filter(df_micro_dados_casos, PuÃ©rpera=="SIM")
 if (nrow(df_micro_dados_casos_filter) > 0) {
   df_tabela_comorbidades_paciente <- 
     data.frame(
       select(df_micro_dados_casos_filter, 
              codigo_paciente), 
-      select(filter(df_tabela_comorbidades, descricao=="Puérpera"), 
+      select(filter(df_tabela_comorbidades, descricao=="PuÃ©rpera"), 
              codigo)
       
     )
@@ -257,14 +257,14 @@ if (nrow(df_micro_dados_casos_filter) > 0) {
   df_tabela_comorbidades_paciente <- rename(df_tabela_comorbidades_paciente, paciente=codigo_paciente)
   dbWriteTable(con, "comorbidade_paciente", df_tabela_comorbidades_paciente, row.names=FALSE, append=TRUE)
 }
-#Síndrome De Down
-df_micro_dados_casos_filter <- filter(df_micro_dados_casos, df_micro_dados_casos["Síndrome De Down"]=="SIM")
+#SÃ­ndrome De Down
+df_micro_dados_casos_filter <- filter(df_micro_dados_casos, df_micro_dados_casos["SÃ­ndrome De Down"]=="SIM")
 if (nrow(df_micro_dados_casos_filter) > 0) {
   df_tabela_comorbidades_paciente <- 
     data.frame(
       select(df_micro_dados_casos_filter, 
              codigo_paciente), 
-      select(filter(df_tabela_comorbidades, descricao=="Síndrome De Down"), 
+      select(filter(df_tabela_comorbidades, descricao=="SÃ­ndrome De Down"), 
              codigo)
     )
   df_tabela_comorbidades_paciente <- rename(df_tabela_comorbidades_paciente, comorbidade=codigo)
@@ -301,7 +301,7 @@ df_isolamento <- read_csv2(
 )
 
 #Prepara e insere dados de isolamento
-df_isolamento$'Média de Índice De Isolamento' <- as.double(df_isolamento$'Média de Índice De Isolamento') * 100
+df_isolamento$'MÃ©dia de Ãndice De Isolamento' <- as.double(df_isolamento$'MÃ©dia de Ãndice De Isolamento') * 100
 
 #Ajusta data isolamento
 df_isolamento <- df_isolamento %>% 
@@ -310,14 +310,14 @@ df_isolamento <- df_isolamento %>%
     into = c("diaSemana", "diames"),
     sep = ","
   )
-# separando o dia e mês
+# separando o dia e mÃªs
 df_isolamento <- df_isolamento %>% 
   separate( 
     col = diames, 
     into = c("dia", "mes"),
     sep = "/"
   ) 
-#criando colunas para comparação
+#criando colunas para comparaÃ§Ã£o
 df_isolamento$data1 <- paste0("2020-", df_isolamento$mes,"-", str_trim(df_isolamento$dia))
 df_isolamento$data2 <- paste0("2021-", df_isolamento$mes,"-", str_trim(df_isolamento$dia))
 # ifelse para comparar o dia da semana das datas com o dia da semana da tabela 
@@ -328,8 +328,8 @@ df_isolamento$dataFinal <-
 
 df_tabela_isolamento <- select(df_isolamento, 
                                data_isolamento=dataFinal,
-                               media_isolamento="Média de Índice De Isolamento",
-                               municipio="Código Município IBGE")
+                               media_isolamento="MÃ©dia de Ãndice De Isolamento",
+                               municipio="CÃ³digo MunicÃ­pio IBGE")
 df_tabela_isolamento$codigo <- seq(1,nrow(df_tabela_isolamento))
 df_tabela_isolamento <- filter(df_tabela_isolamento, municipio != 35)
 dbWriteTable(con, "isolamento", df_tabela_isolamento, row.names=FALSE, append=TRUE)
@@ -340,7 +340,7 @@ print("Registros inseridos no banco de dados")
 ############################################################################################################
 
 
-#função para arrumar o encoding 
+#funÃ§Ã£o para arrumar o encoding 
 set_utf8 <- function(x) {
   # Declare UTF-8 encoding on all character columns:
   chr <- sapply(x, is.character)
@@ -353,7 +353,7 @@ set_utf8 <- function(x) {
 #Gera tabelas
 ### TABELAS
 
-### tabela consulta 1 - Casos, óbitos, letalidade, mortalidade por Região Administativa
+### tabela consulta 1 - Casos, Ã³bitos, letalidade, mortalidade por RegiÃ£o Administativa
 df1 <- as_tibble(
   set_utf8(
     dbGetQuery(con,
@@ -382,20 +382,20 @@ tab_df1 <- df1 %>%
   mutate(letalidade = obitos/casos) %>%
   mutate(mortalidade = obitos*100000/populacao)
 
-colnames(tab_df1) <- c("Região Administrativa", "Número de óbitos", 
-                       "Número de casos","População", "Letalidade", 
+colnames(tab_df1) <- c("RegiÃ£o Administrativa", "NÃºmero de Ã³bitos", 
+                       "NÃºmero de casos","PopulaÃ§Ã£o", "Letalidade", 
                        "Mortalidade/100 mil habit.")
 
-# gerando a tabela para impressão
+# gerando a tabela para impressÃ£o
 gt(tab_df1) %>%
-  tab_header("Casos, óbitos,letalidade e mortalidade de Covid-19 por Região Administrativa de São Paulo")%>%
-  tab_source_note("Fonte: Dados abertos/Governo de São Paulo")%>%
+  tab_header("Casos, Ã³bitos,letalidade e mortalidade de Covid-19 por RegiÃ£o Administrativa de SÃ£o Paulo")%>%
+  tab_source_note("Fonte: Dados abertos/Governo de SÃ£o Paulo")%>%
   fmt_percent(columns = c("Letalidade"), decimals = 2, dec_mark = ",") %>%
-  fmt_number(columns = c("Número de óbitos", "Número de casos", "População"), decimals = 0,sep_mark = ".")%>%
+  fmt_number(columns = c("NÃºmero de Ã³bitos", "NÃºmero de casos", "PopulaÃ§Ã£o"), decimals = 0,sep_mark = ".")%>%
   fmt_number(columns = "Mortalidade/100 mil habit.", decimals = 1, dec_mark = ",")
 
 
-### tabela consulta 2 - comorbidade, casos e óbitos por gênero
+### tabela consulta 2 - comorbidade, casos e Ã³bitos por gÃªnero
 
 df2 <- as_tibble(set_utf8(dbGetQuery(con,
                                      "select 
@@ -449,10 +449,10 @@ tab_df2 <- mutate(df2, letalidade = obitos/casos) %>%
   select(comorbidade_descricao, genero, letalidade)
 
 tab_df2$comorbidade_descricao <- ifelse(is.na(tab_comorbGenero$comorbidade_descricao), "Geral sem comorb.", tab_comorbGenero$comorbidade_descricao)
-tab_df2$comorbidade_descricao <- ifelse(tab_comorbGenero$comorbidade_descricao == "Doenca Hematologica", "Doença Hematológica", tab_comorbGenero$comorbidade_descricao)
-tab_df2$comorbidade_descricao <- ifelse(tab_comorbGenero$comorbidade_descricao == "Doenca Hepatica", "Doença Hepática", tab_comorbGenero$comorbidade_descricao)
-tab_df2$comorbidade_descricao <- ifelse(tab_comorbGenero$comorbidade_descricao == "Doenca Neurologica", "Doença Neurológica", tab_comorbGenero$comorbidade_descricao)
-tab_df2$comorbidade_descricao <- ifelse(tab_comorbGenero$comorbidade_descricao == "Imunodepressao", "Imunodepressão", tab_comorbGenero$comorbidade_descricao)
+tab_df2$comorbidade_descricao <- ifelse(tab_comorbGenero$comorbidade_descricao == "Doenca Hematologica", "DoenÃ§a HematolÃ³gica", tab_comorbGenero$comorbidade_descricao)
+tab_df2$comorbidade_descricao <- ifelse(tab_comorbGenero$comorbidade_descricao == "Doenca Hepatica", "DoenÃ§a HepÃ¡tica", tab_comorbGenero$comorbidade_descricao)
+tab_df2$comorbidade_descricao <- ifelse(tab_comorbGenero$comorbidade_descricao == "Doenca Neurologica", "DoenÃ§a NeurolÃ³gica", tab_comorbGenero$comorbidade_descricao)
+tab_df2$comorbidade_descricao <- ifelse(tab_comorbGenero$comorbidade_descricao == "Imunodepressao", "ImunodepressÃ£o", tab_comorbGenero$comorbidade_descricao)
 
 tab_df2M <- tab_df2 %>%
   filter(genero == "MASCULINO") %>%
@@ -468,16 +468,16 @@ tab_df2F <- tab_df2 %>%
 tab_df2G <- inner_join(tab_df2M,tab_df2F, by="comorbidade_descricao")
 colnames(tab_df2G) <- c("Comorbidade","Letal. Masculino", "Letal. Feminino")
 
-# gerando a tabela para impressão
+# gerando a tabela para impressÃ£o
 gt(tab_df2G) %>%
-  tab_header("Letalidade de Covid-19 por comorbidade e gênero em São Paulo")%>%
-  tab_source_note("Fonte: Dados abertos/Governo de São Paulo")%>%
+  tab_header("Letalidade de Covid-19 por comorbidade e gÃªnero em SÃ£o Paulo")%>%
+  tab_source_note("Fonte: Dados abertos/Governo de SÃ£o Paulo")%>%
   tab_spanner(label="Letalidade", columns = c("Letal. Masculino", "Letal. Feminino"))%>%
   fmt_percent(columns = c("Letal. Masculino", "Letal. Feminino"), decimals = 2, dec_mark = ",") %>%
-  cols_label("Letal. Masculino" = html("Gênero Masculino"), "Letal. Feminino" = html("Gênero Feminino"))
+  cols_label("Letal. Masculino" = html("GÃªnero Masculino"), "Letal. Feminino" = html("GÃªnero Feminino"))
 
 
-### tabela consulta 3 - Faixa etária, casos e óbitos por  gênero
+### tabela consulta 3 - Faixa etÃ¡ria, casos e Ã³bitos por  gÃªnero
 
 df3 <- as_tibble(set_utf8(dbGetQuery(con,
                                      "select 
@@ -521,15 +521,15 @@ tab_df3F <-tab_df3 %>%
 
 tab_df3G <- inner_join(tab_df3M,tab_df3F, by="idade")
 
-colnames(tab_df3G ) <- c("Faixa etária (anos)","Letal. Masculino", "Letal. Feminino")
+colnames(tab_df3G ) <- c("Faixa etÃ¡ria (anos)","Letal. Masculino", "Letal. Feminino")
 
-# gerando a tabela para impressão
+# gerando a tabela para impressÃ£o
 gt(tab_df3G) %>%
-  tab_header("Letalidade de Covid-19 por faixa etária e gênero em São Paulo")%>%
-  tab_source_note("Fonte: Dados abertos/Governo de São Paulo")%>%
+  tab_header("Letalidade de Covid-19 por faixa etÃ¡ria e gÃªnero em SÃ£o Paulo")%>%
+  tab_source_note("Fonte: Dados abertos/Governo de SÃ£o Paulo")%>%
   tab_spanner(label="Letalidade", columns = c("Letal. Masculino", "Letal. Feminino"))%>%
   fmt_percent(columns = c("Letal. Masculino", "Letal. Feminino"), decimals = 2, dec_mark = ",") %>%
-  cols_label("Letal. Masculino" = html("Gênero Masculino"), "Letal. Feminino" = html("Gênero Feminino"))
+  cols_label("Letal. Masculino" = html("GÃªnero Masculino"), "Letal. Feminino" = html("GÃªnero Feminino"))
 
 
 ############# consulta 4 - Isolamento
@@ -572,21 +572,21 @@ df4gp <- df4%>%
 
 #view(df4gp)
 
-colnames(df4gp) <- c("Região Administrativa", "Ano", "Mês","Média de Isolamento","Média de Casos", "Média de incidência/milhão hab.")
+colnames(df4gp) <- c("RegiÃ£o Administrativa", "Ano", "MÃªs","MÃ©dia de Isolamento","MÃ©dia de Casos", "MÃ©dia de incidÃªncia/milhÃ£o hab.")
 
 
 #summary(df4gp)
 
-# gerando a tabela para impressão
+# gerando a tabela para impressÃ£o
 gt(df4gp) %>%
-  tab_header("Média mensal de isolamento, casos e incidência de Covid-19 por Região Administrativa no Estado de São Paulo")%>%
-  tab_source_note("Fonte: Dados abertos/Governo de São Paulo")%>%
-  fmt_percent(columns = c("Média de Isolamento"), decimals = 1, dec_mark = ",", sep_mark = ".") %>%
-  fmt_number(columns = c("Média de Casos","Média de incidência/milhão hab."), decimals = 1, dec_mark = ",", sep_mark = ".")
+  tab_header("MÃ©dia mensal de isolamento, casos e incidÃªncia de Covid-19 por RegiÃ£o Administrativa no Estado de SÃ£o Paulo")%>%
+  tab_source_note("Fonte: Dados abertos/Governo de SÃ£o Paulo")%>%
+  fmt_percent(columns = c("MÃ©dia de Isolamento"), decimals = 1, dec_mark = ",", sep_mark = ".") %>%
+  fmt_number(columns = c("MÃ©dia de Casos","MÃ©dia de incidÃªncia/milhÃ£o hab."), decimals = 1, dec_mark = ",", sep_mark = ".")
 
 
 
-########  Gráficos do isolamento x Incidência
+########  GrÃ¡ficos do isolamento x IncidÃªncia
 
 
 coeff <- max(df4$incidencia)/100
@@ -601,7 +601,7 @@ ggplot(df4) +
   
   scale_y_continuous(
     # Features of the first axis
-    name = "Incidência de COvid-19 (por milhão de hab.)",
+    name = "IncidÃªncia de COvid-19 (por milhÃ£o de hab.)",
     
     # Add a second axis and specify its features
     sec.axis = sec_axis(~ . * 1/coeff , name="Taxa de isolamento (%)")
@@ -611,7 +611,7 @@ ggplot(df4) +
     axis.title.y = element_text(color = "red", size=13),
     axis.title.y.right = element_text(color = "blue", size=13),
     axis.text.x = element_text(angle = 45, hjust = 1))  +
-  ggtitle("Incidência de Covid-19 e taxa de isolamento ao longo do tempo por RA") +
+  ggtitle("IncidÃªncia de Covid-19 e taxa de isolamento ao longo do tempo por RA") +
   facet_wrap(~ nome, scales = "free_y")
 
 ## Objetivos 1 e 2
@@ -631,22 +631,22 @@ df1<-dbGetQuery(con, "SELECT
 df1<-set_utf8(df1)
 
 
-p1<-arrange(df1, casos) %>% #ordenar do maior para menor obitos e casos; mas não ordena os nomes
+p1<-arrange(df1, casos) %>% #ordenar do maior para menor obitos e casos; mas nÃ£o ordena os nomes
   mutate(nome=factor(nome, levels=nome)) %>% #atualizar os nomes
   ggplot() + geom_col(aes(x=nome, y=casos, group=nome)) +
-  coord_flip() + # mudar a posição dos eixos
-  labs(y="Número de Casos", title = "Número de casos no estado de São Paulo") +
+  coord_flip() + # mudar a posiÃ§Ã£o dos eixos
+  labs(y="NÃºmero de Casos", title = "NÃºmero de casos no estado de SÃ£o Paulo") +
   theme_minimal() + theme(axis.title.y = element_blank()) +
   scale_y_continuous(limits = c(0,1300000), expand = c(0, 0))
 
 p1
 
-p2<-arrange(df1, obitos) %>% #ordenar do maior para menor obitos e casos; mas não ordena os nomes
+p2<-arrange(df1, obitos) %>% #ordenar do maior para menor obitos e casos; mas nÃ£o ordena os nomes
   mutate(nome=factor(nome, levels=nome)) %>% #atualizar os nomes
   ggplot() + theme_minimal() + geom_col(aes(x=nome, y=obitos, group=nome)) +
-  coord_flip() + # mudar a posição dos eixos
-  labs(y="Número de Óbitos", title = "Número de óbitos no estado de São Paulo", 
-       caption = expression(paste("*RA: Região Administrativa e RM: Região Metropolitana \n Fonte: Dados Abertos/Governo de São Paulo"))) +
+  coord_flip() + # mudar a posiÃ§Ã£o dos eixos
+  labs(y="NÃºmero de Ã“bitos", title = "NÃºmero de Ã³bitos no estado de SÃ£o Paulo", 
+       caption = expression(paste("*RA: RegiÃ£o Administrativa e RM: RegiÃ£o Metropolitana \n Fonte: Dados Abertos/Governo de SÃ£o Paulo"))) +
   theme(plot.caption = element_text(hjust = -2.5)) +
   theme(axis.title.y = element_blank()) +
   scale_y_continuous(limits = c(0,55000), expand = c(0, 0))
@@ -684,33 +684,33 @@ p<-ggplot() + geom_sf(data=data_mapa, fill="#2D3E50", size=.15, show.legend = FA
 p1 <- p + geom_point(data=data_mapa, aes(x = longitude, y = latitude, size= casos, color=casos), alpha = 0.5) +
   scale_size(range = c(1, 10)) +
   guides(size=FALSE) +
-  scale_color_gradient2(low = "white", mid = "yellow", high = "red", midpoint = 200000 ,name="Nº de casos")+
+  scale_color_gradient2(low = "white", mid = "yellow", high = "red", midpoint = 200000 ,name="NÂº de casos")+
   theme_minimal() +
   theme(legend.position = c(0.9, 0.80))+
   annotation_scale() +
-  labs(title = "Distribuição de casos de COVID-19 no estado de São Paulo ")
+  labs(title = "DistribuiÃ§Ã£o de casos de COVID-19 no estado de SÃ£o Paulo ")
 
 
 p2 <- p + geom_point(data=data_mapa, aes(x = longitude, y = latitude, size=obitos, color=obitos), alpha = 0.5) +
   scale_size(range = c(1, 10)) +
   guides(size=FALSE) +
-  scale_color_gradient2(low = "white", mid = "yellow", high = "red", midpoint = 10000, name="Nº de óbitos")+
+  scale_color_gradient2(low = "white", mid = "yellow", high = "red", midpoint = 10000, name="NÂº de Ã³bitos")+
   theme_minimal() +
   theme(legend.position = c(0.9, 0.80))+
   annotation_scale() +
-  labs(title = "Distribuição de óbitos por COVID-19 no estado de São Paulo ", caption = "Fonte: Dados Abertos/Governo de São Paulo")
+  labs(title = "DistribuiÃ§Ã£o de Ã³bitos por COVID-19 no estado de SÃ£o Paulo ", caption = "Fonte: Dados Abertos/Governo de SÃ£o Paulo")
 
 plots_casos_obitos_regiao<-wrap_plots(p1,p2)
 ggsave("objetivo1e2mapas.png", width=35, height=15, units="cm", dpi=300)
 
-# versão interativa
+# versÃ£o interativa
 library(plotly)
 
 p1 <- p + geom_point(data=data_mapa, aes(x = longitude, y = latitude, size= casos, color=nome), alpha = 0.5) +
   theme_minimal() +
   scale_size(range = c(1, 10)) +
   theme(legend.position = "none")+
-  labs(title = "Distribuição de casos de COVID-19 no estado de São Paulo ")
+  labs(title = "DistribuiÃ§Ã£o de casos de COVID-19 no estado de SÃ£o Paulo ")
 
 ggplotly(p1)
 
@@ -718,7 +718,7 @@ p2 <- p + geom_point(data=data_mapa, aes(x = longitude, y = latitude, size= obit
   theme_minimal() +
   scale_size(range = c(1, 10)) +
   theme(legend.position = "none")+
-  labs(title = "Distribuição de óbitos por COVID-19 no estado de São Paulo ")
+  labs(title = "DistribuiÃ§Ã£o de Ã³bitos por COVID-19 no estado de SÃ£o Paulo ")
 
 ggplotly(p2)
 
@@ -771,8 +771,8 @@ df5<-set_utf8(df5)
 p1<-mutate_at(df5, vars(comorbidade_descricao, genero), list(factor)) %>%
   ggplot() + theme_minimal() + 
   geom_col(aes(x=genero, y=porcentagem, fill=genero)) +
-  labs(y="Taxa de letalidade (%)", title = "Taxa de letalidade por COVID-19 em relação ao gênero e à comorbidade informada", 
-       caption = "Fonte: Dados Abertos/Governo de São Paulo") +
+  labs(y="Taxa de letalidade (%)", title = "Taxa de letalidade por COVID-19 em relaÃ§Ã£o ao gÃªnero e Ã  comorbidade informada", 
+       caption = "Fonte: Dados Abertos/Governo de SÃ£o Paulo") +
   theme(axis.title.x = element_blank()) +
   theme(legend.position = "none") +
   scale_fill_brewer(palette = "Pastel2") +
@@ -821,7 +821,7 @@ p1<-mutate_at(df3, vars(idade, genero), list(factor)) %>%
   theme(legend.title = element_blank(), legend.justification=c(1,0), legend.position=c(0.95,0.06)) +
   theme(legend.background = element_blank())+
   scale_y_continuous(limits = c(0,42000), expand = c(0, 0)) +
-  labs(x="Idade", y="Número de óbitos", title = "Número de óbitos relacionados à COVID-19 por faixa etária no estado de São Paulo" ,caption = "Fonte: Dados Abertos/Governo de São Paulo") +
+  labs(x="Idade", y="NÃºmero de Ã³bitos", title = "NÃºmero de Ã³bitos relacionados Ã  COVID-19 por faixa etÃ¡ria no estado de SÃ£o Paulo" ,caption = "Fonte: Dados Abertos/Governo de SÃ£o Paulo") +
   coord_flip()
 p1
 
@@ -859,9 +859,9 @@ p1<-mutate_at(df4, vars(nome), list(factor)) %>%
   geom_smooth(aes(x=porcentagem, y=obitos), se=FALSE) +
   facet_wrap(~nome, scales = "free_y") + 
   labs(x="Taxa de isolamento (%)", 
-       y="Número de óbitos", 
-       title = "Relação entre número de óbitos por COVID-19 e a taxa de isolamento no estado de São Paulo ", 
-       caption = "Fonte: Dados Abertos/Governo de São Paulo")
+       y="NÃºmero de Ã³bitos", 
+       title = "RelaÃ§Ã£o entre nÃºmero de Ã³bitos por COVID-19 e a taxa de isolamento no estado de SÃ£o Paulo ", 
+       caption = "Fonte: Dados Abertos/Governo de SÃ£o Paulo")
 p1
 
 ggsave("objetivo5a.png", width=21, height=17, units="cm", dpi=300)
